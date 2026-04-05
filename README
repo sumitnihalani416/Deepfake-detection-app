@@ -1,0 +1,80 @@
+# VeriLens AI Image Detector — FastAPI Backend
+
+Analyze images for signs of AI generation using **Google Gemini 2.5 Flash** vision model.
+
+## Quick Start
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Set your Gemini API key (free at https://aistudio.google.com/apikey)
+export GEMINI_API_KEY=your_api_key_here
+
+# 3. Run the server
+uvicorn main:app --reload
+```
+
+Open **http://localhost:8000/docs** for interactive API docs.
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/analyze` | Analyze a base64-encoded image |
+| `POST` | `/api/analyze/upload` | Analyze an uploaded image file |
+| `GET` | `/api/history` | Get analysis history (last 50) |
+| `DELETE` | `/api/history` | Clear history |
+| `GET` | `/health` | Health check + API key status |
+
+## Example Usage
+
+### Base64 image
+
+```bash
+# Encode an image and analyze it
+BASE64=$(base64 -w0 photo.jpg)
+curl -X POST http://localhost:8000/api/analyze \
+  -H "Content-Type: application/json" \
+  -d "{\"imageBase64\": \"$BASE64\"}"
+```
+
+### File upload
+
+```bash
+curl -X POST http://localhost:8000/api/analyze/upload \
+  -F "file=@photo.jpg"
+```
+
+### Response format
+
+```json
+{
+  "realProbability": 25,
+  "aiProbability": 75,
+  "verdict": "AI_GENERATED",
+  "confidence": "HIGH",
+  "indicators": [
+    "Inconsistent lighting on facial features",
+    "Overly smooth skin texture",
+    "Artifacts in hair detail"
+  ],
+  "analysis": "The image exhibits several hallmarks of AI generation..."
+}
+```
+
+## Docker
+
+```bash
+docker build -t verilens-backend .
+docker run -p 8000:8000 -e GEMINI_API_KEY=your_key verilens-backend
+```
+
+## Getting a Gemini API Key
+
+1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
+2. Sign in with your Google account
+3. Click **"Create API Key"**
+4. Copy the key and set it as `GEMINI_API_KEY`
+
+The free tier gives you ~1,500 requests/day — plenty for development and moderate usage.
